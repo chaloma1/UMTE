@@ -22,6 +22,6 @@ public interface WordDao {
     void deleteAll();
 
 
-    @Query("SELECT * FROM word")
+    @Query("SELECT * FROM word where rating > 0")
     List<Word> getAll();
 }

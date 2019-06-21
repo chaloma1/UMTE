@@ -3,9 +3,11 @@ package cz.uhk.chaloma1.pronouncecorrector;
 import android.Manifest;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -27,13 +29,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import cz.uhk.chaloma1.pronouncecorrector.Service.InitDB;
+import cz.uhk.chaloma1.pronouncecorrector.dao.EvaluationDao;
 import cz.uhk.chaloma1.pronouncecorrector.dao.WordDao;
 import cz.uhk.chaloma1.pronouncecorrector.database.AppRoomDatabase;
+import cz.uhk.chaloma1.pronouncecorrector.model.Evaluation;
 import cz.uhk.chaloma1.pronouncecorrector.model.Word;
 
 public class AndroidTTS extends AppCompatActivity {
@@ -42,6 +48,9 @@ public class AndroidTTS extends AppCompatActivity {
     private SpeechRecognizer mySpeechRecognizer;
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
 
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor sharedPreferencesEditor;
+
 
     private TextView textViewGenerated;
     private ImageButton imageButtonHint;
@@ -49,9 +58,14 @@ public class AndroidTTS extends AppCompatActivity {
     private ProgressBar progressBarTraining;
     private TextView textViewProgress;
 
+    private Evaluation evaluation;
+    private List<String> correctWords;
+    private List<String> wrongWords;
+
     private boolean zapocitaneSlovo;
 
     private WordDao wordDao;
+    private EvaluationDao evaluationDao;
 
     private List<Word> allWords;
 
@@ -64,12 +78,17 @@ public class AndroidTTS extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferencesEditor = sharedPreferences.edit();
+
         textViewGenerated = findViewById(R.id.textViewGenerated);
         //textViewGenerated.setText("Hi there!");
 
         imageButtonHint = findViewById(R.id.imageButtonHint);
         buttonNext = findViewById(R.id.buttonNext);
         progressBarTraining = findViewById(R.id.progressBarTraining);
+
+        progressBarTraining.setMax(Integer.valueOf(sharedPreferences.getString("practiseLength", "10")));
 
         textViewProgress = findViewById(R.id.textViewProgress);
         textViewProgress.setText(progressBarTraining.getProgress() + " " + "/" + " " + progressBarTraining.getMax());
@@ -108,14 +127,27 @@ public class AndroidTTS extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                try{
-                    generateWord();
-                    int progress = progressBarTraining.getProgress();
-                    progressBarTraining.setProgress(progress + 1);
-                    textViewProgress.setText(progressBarTraining.getProgress() + " " + "/" + " " + progressBarTraining.getMax());
-                    zapocitaneSlovo = false;
-                }catch (Exception e){
-                    System.out.println("chyba v nacteni");
+                if (progressBarTraining.getProgress() < progressBarTraining.getMax()) {
+
+                    try {
+                        generateWord();
+                        int progress = progressBarTraining.getProgress();
+                        progressBarTraining.setProgress(progress + 1);
+                        textViewProgress.setText(progressBarTraining.getProgress() + " " + "/" + " " + progressBarTraining.getMax());
+                        zapocitaneSlovo = false;
+                    } catch (Exception e) {
+                        System.out.println("chyba v nacteni");
+                    }
+                }else {
+                    evaluation.setCorrectWords(correctWords);
+                    evaluation.setWrongWords(wrongWords);
+                    evaluation.setCorrectNumber(correctWords.size());
+                    evaluation.setWrongNumber(wrongWords.size());
+                    // pridej evaluation
+                    evaluationDao.insertEvaluation(evaluation);
+                    Toast.makeText(AndroidTTS.this, "Vyhodnoceni dokonceno", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(AndroidTTS.this, HomeActivity.class));
+                    finish();
                 }
 
             }
@@ -124,10 +156,37 @@ public class AndroidTTS extends AppCompatActivity {
         initializeTextToSpeech();
         initializeSpeechRecognizer();
 
-        AppRoomDatabase database = AppRoomDatabase.getDatabase(this); //Room.databaseBuilder(this, AppRoomDatabase.class, "mydb").allowMainThreadQueries().build();
+        AppRoomDatabase database = AppRoomDatabase.getDatabase(this);
+
+        evaluationDao = database.getEvaluationDao();
 
         wordDao = database.getWordDao();
         allWords = wordDao.getAll();
+        if(allWords.size() == 0){
+            InitDB initDB = new InitDB(AndroidTTS.this);
+            initDB.initWords();
+            allWords = wordDao.getAll();
+        }
+
+        evaluation = new Evaluation(sharedPreferences.getString("loginTemp", "Error"));
+
+        correctWords = new ArrayList<>();
+
+        wrongWords = new ArrayList<>();
+
+        List<Evaluation> evaluations = evaluationDao.getUsersEvaluation(sharedPreferences.getString("loginTemp", ""));
+
+        System.out.println("evaluations + " + evaluations.size());
+        if (evaluations.size() != 0) {
+            for (int i = 0; i <= evaluations.size()-1; i++) {
+                System.out.println("evaluations datum + " + evaluations.get(i).getDatum());
+                System.out.println("evaluations wrong words + " + evaluations.get(i).getWrongWords());
+                System.out.println("evaluations wrong + " + evaluations.get(i).getWrongNumber());
+                System.out.println("evaluations owner + " + evaluations.get(i).getOwnerLogin());
+            }
+        }
+
+
         generateWord();
     }
 
@@ -204,9 +263,12 @@ public class AndroidTTS extends AppCompatActivity {
 
 
         if(spokenWord.equals(generatedWord)){
+            correctWords.add(generatedWord);
             Toast.makeText(AndroidTTS.this, "Correct!", Toast.LENGTH_SHORT).show();
 
+
         }else{
+            wrongWords.add(generatedWord);
             Toast.makeText(AndroidTTS.this, "Wrong! You said " + " " + spokenWord, Toast.LENGTH_SHORT).show();
 
         }
@@ -282,6 +344,14 @@ public class AndroidTTS extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         myTTS.shutdown();
+        mySpeechRecognizer.destroy();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        myTTS.shutdown();
+        mySpeechRecognizer.destroy();
     }
 
     private void requestAudioPermissions(){

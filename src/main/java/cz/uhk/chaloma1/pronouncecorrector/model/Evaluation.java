@@ -3,7 +3,12 @@ package cz.uhk.chaloma1.pronouncecorrector.model;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import org.w3c.dom.Text;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Evaluation {
@@ -13,18 +18,49 @@ public class Evaluation {
 
     private String datum;
 
-    private int correctWords;
+    private String correctWords;
 
-    private int wrongWords;
+    private String wrongWords;
 
     private String ownerLogin;
 
+    private int correctNumber;
 
-    public Evaluation(String datum, int correctWords, int wrongWords, String ownerLogin) {
-        this.datum = datum;
-        this.correctWords = correctWords;
-        this.wrongWords = wrongWords;
+    private int wrongNumber;
+
+
+    public Evaluation(String ownerLogin) {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("YYYY-MM-dd");
+
+
+        this.datum = simpleDateFormat.format(new Date());
         this.ownerLogin = ownerLogin;
+    }
+
+    public void setCorrectWords(String correctWords) {
+        this.correctWords = correctWords;
+    }
+
+    public void setWrongWords(String wrongWords) {
+        this.wrongWords = wrongWords;
+    }
+
+    public int getCorrectNumber() {
+        return correctNumber;
+    }
+
+    public void setCorrectNumber(int correctNumber) {
+        this.correctNumber = correctNumber;
+    }
+
+    public int getWrongNumber() {
+        return wrongNumber;
+    }
+
+    public void setWrongNumber(int wrongNumber) {
+        this.wrongNumber = wrongNumber;
     }
 
     public String getOwnerLogin() {
@@ -51,19 +87,33 @@ public class Evaluation {
         this.datum = datum;
     }
 
-    public int getCorrectWords() {
+    public String getCorrectWords() {
         return correctWords;
     }
 
-    public void setCorrectWords(int correctWords) {
-        this.correctWords = correctWords;
+    public void setCorrectWords(List<String> correctWords) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String separator = ",";
+        for(String word : correctWords){
+            stringBuilder.append(word);
+            stringBuilder.append(separator);
+        }
+        this.correctWords = stringBuilder.toString();
+        //this.correctWords = this.correctWords.substring(0, this.correctWords.length() - separator.length());
     }
 
-    public int getWrongWords() {
+    public String getWrongWords() {
         return wrongWords;
     }
 
-    public void setWrongWords(int wrongWords) {
-        this.wrongWords = wrongWords;
+    public void setWrongWords(List<String> wrongWords) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String separator = ",";
+        for(String word : wrongWords){
+            stringBuilder.append(word);
+            stringBuilder.append(separator);
+        }
+        this.wrongWords = stringBuilder.toString();
+        //this.correctWords = this.correctWords.substring(0, this.correctWords.length() - separator.length());
     }
 }
