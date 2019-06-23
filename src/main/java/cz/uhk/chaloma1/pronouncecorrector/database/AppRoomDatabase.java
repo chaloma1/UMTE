@@ -12,7 +12,7 @@ import cz.uhk.chaloma1.pronouncecorrector.model.Evaluation;
 import cz.uhk.chaloma1.pronouncecorrector.model.User;
 import cz.uhk.chaloma1.pronouncecorrector.model.Word;
 
-@Database(entities = {User.class, Word.class, Evaluation.class}, version = 1)
+@Database(entities = {User.class, Word.class, Evaluation.class}, version = 1, exportSchema = false)
 public abstract class AppRoomDatabase extends RoomDatabase {
 
 

@@ -1,7 +1,9 @@
 package cz.uhk.chaloma1.pronouncecorrector;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,6 +24,9 @@ import cz.uhk.chaloma1.pronouncecorrector.model.Word;
 public class ListeningActivity extends AppCompatActivity {
 
     TextView textViewListening;
+
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor sharedPreferencesEditor;
 
     private TextToSpeech myTTS;
 
@@ -59,7 +64,7 @@ public class ListeningActivity extends AppCompatActivity {
 
 
 
-            timerHandler.postDelayed(this, 2500);
+            timerHandler.postDelayed(this, Integer.valueOf(sharedPreferences.getString("listeningSpeed", "2500")));
 
         }
     };
@@ -99,6 +104,9 @@ public class ListeningActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listening);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferencesEditor = sharedPreferences.edit();
 
         textViewListening = findViewById(R.id.textViewListening);
 

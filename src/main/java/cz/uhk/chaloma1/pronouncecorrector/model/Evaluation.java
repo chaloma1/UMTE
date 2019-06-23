@@ -24,6 +24,8 @@ public class Evaluation {
 
     private String ownerLogin;
 
+    private float average;
+
     private int correctNumber;
 
     private int wrongNumber;
@@ -32,11 +34,19 @@ public class Evaluation {
     public Evaluation(String ownerLogin) {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("YYYY-MM-dd");
+        simpleDateFormat.applyPattern("yyyy-MM-dd");
 
 
         this.datum = simpleDateFormat.format(new Date());
         this.ownerLogin = ownerLogin;
+    }
+
+    public float getAverage() {
+        return average;
+    }
+
+    public void setAverage(float average) {
+        this.average = average;
     }
 
     public void setCorrectWords(String correctWords) {
@@ -93,13 +103,15 @@ public class Evaluation {
 
     public void setCorrectWords(List<String> correctWords) {
         StringBuilder stringBuilder = new StringBuilder();
-        String separator = ",";
+        String separator = ", ";
         for(String word : correctWords){
+            if (correctWords.indexOf(word) != 0) {
+                stringBuilder.append(separator);
+            }
             stringBuilder.append(word);
-            stringBuilder.append(separator);
+
         }
         this.correctWords = stringBuilder.toString();
-        //this.correctWords = this.correctWords.substring(0, this.correctWords.length() - separator.length());
     }
 
     public String getWrongWords() {
@@ -108,12 +120,14 @@ public class Evaluation {
 
     public void setWrongWords(List<String> wrongWords) {
         StringBuilder stringBuilder = new StringBuilder();
-        String separator = ",";
+        String separator = ", ";
         for(String word : wrongWords){
+            if (wrongWords.indexOf(word) != 0) {
+                stringBuilder.append(separator);
+            }
             stringBuilder.append(word);
-            stringBuilder.append(separator);
+
         }
         this.wrongWords = stringBuilder.toString();
-        //this.correctWords = this.correctWords.substring(0, this.correctWords.length() - separator.length());
     }
 }

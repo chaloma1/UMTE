@@ -105,7 +105,8 @@ public class AndroidTTS extends AppCompatActivity {
                 System.out.println("Clicked");
                 Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.US);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US);
                 intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
 
                 mySpeechRecognizer.startListening(intent);
@@ -143,10 +144,25 @@ public class AndroidTTS extends AppCompatActivity {
                     evaluation.setWrongWords(wrongWords);
                     evaluation.setCorrectNumber(correctWords.size());
                     evaluation.setWrongNumber(wrongWords.size());
-                    // pridej evaluation
+
+                    float average;
+
+                    if (correctWords.size() != 0 || wrongWords.size() != 0) {
+                        average = ((float) correctWords.size() / (float) (correctWords.size() + wrongWords.size())) * 100;
+                    }else {
+                        average = 0;
+                    }
+                    evaluation.setAverage(average);
+
+                // pridej evaluation
                     evaluationDao.insertEvaluation(evaluation);
                     Toast.makeText(AndroidTTS.this, "Vyhodnoceni dokonceno", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(AndroidTTS.this, HomeActivity.class));
+                    //startActivity(new Intent(AndroidTTS.this, HomeActivity.class));
+                    Intent intent = new Intent(AndroidTTS.this, EvaluationActivity.class);
+                    intent.putExtra("average", average);
+                    intent.putExtra("correct", evaluation.getCorrectWords());
+                    intent.putExtra("wrong", evaluation.getWrongWords());
+                    startActivity(intent);
                     finish();
                 }
 
@@ -181,6 +197,7 @@ public class AndroidTTS extends AppCompatActivity {
             for (int i = 0; i <= evaluations.size()-1; i++) {
                 System.out.println("evaluations datum + " + evaluations.get(i).getDatum());
                 System.out.println("evaluations wrong words + " + evaluations.get(i).getWrongWords());
+                System.out.println("evaluations average + " + evaluations.get(i).getAverage());
                 System.out.println("evaluations wrong + " + evaluations.get(i).getWrongNumber());
                 System.out.println("evaluations owner + " + evaluations.get(i).getOwnerLogin());
             }
@@ -238,9 +255,20 @@ public class AndroidTTS extends AppCompatActivity {
 
                     List<String> results = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     System.out.println("onResults" + results);
-                    processResult(results.get(0));
-                    Toast.makeText(AndroidTTS.this, results.get(0), Toast.LENGTH_SHORT).show();
-                    compareWord(results.get(0));
+                    //processResult(results.get(0));
+                    //Toast.makeText(AndroidTTS.this, results.get(0), Toast.LENGTH_SHORT).show();
+
+                    List<String> comparedWords = new ArrayList<String>();
+                    if(results.size() > 5){
+                        for (int i = 0; i <= 4; i++){
+                            comparedWords.add(results.get(i));
+                        }
+                        compareWord(comparedWords);
+                    }else {
+                        compareWord(results);
+
+                    }
+
 
                 }
 
@@ -257,19 +285,40 @@ public class AndroidTTS extends AppCompatActivity {
         }
     }
 
-    private void compareWord(String spokenWord){
-        spokenWord = spokenWord.toLowerCase();
+    private void compareWord(List<String> results){
+
         String generatedWord = textViewGenerated.getText().toString().toLowerCase();
+        boolean correct = false;
+
+        for (String spokenWord : results){
+            spokenWord = spokenWord.toLowerCase();
+
+            if(spokenWord.equals(generatedWord)){
+                if (zapocitaneSlovo == false) {
+                    correctWords.add(generatedWord);
+                }
+                try {
+                    wordDao.updateWordRank(generatedWord, 1);
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+                correct = true;
+                Toast.makeText(AndroidTTS.this, "Correct!", Toast.LENGTH_SHORT).show();
+            }
+
+        }
 
 
-        if(spokenWord.equals(generatedWord)){
-            correctWords.add(generatedWord);
-            Toast.makeText(AndroidTTS.this, "Correct!", Toast.LENGTH_SHORT).show();
-
-
-        }else{
-            wrongWords.add(generatedWord);
-            Toast.makeText(AndroidTTS.this, "Wrong! You said " + " " + spokenWord, Toast.LENGTH_SHORT).show();
+        if (correct == false){
+            if (zapocitaneSlovo == false) {
+                wrongWords.add(generatedWord);
+            }
+            try {
+                wordDao.updateWordRank(generatedWord, -1);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+            Toast.makeText(AndroidTTS.this, "Wrong! You said one of the following " + " " + results.toString(), Toast.LENGTH_SHORT).show();
 
         }
 

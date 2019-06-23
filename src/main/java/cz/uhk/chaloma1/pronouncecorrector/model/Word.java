@@ -12,13 +12,26 @@ public class Word {
 
     private String nazev;
 
+    // pokud se slovo neda vyslovit
     private int rating;
+
+    // pro nacteni tezkych slov
+    private int ranking;
 
 
     public Word(String nazev) {
         this.nazev = nazev;
 
         this.rating = 1;
+        this.ranking = 0;
+    }
+
+    public int getRanking() {
+        return ranking;
+    }
+
+    public void setRanking(int ranking) {
+        this.ranking = ranking;
     }
 
     public int getId_word() {

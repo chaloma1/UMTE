@@ -22,4 +22,18 @@
     <string name="menu_settings">Settings</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
+
+
+    <string-array name="practiseLength">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+    </string-array>
+
+    <string-array name="listeningSpeed">
+        <item>1500</item>
+        <item>2000</item>
+        <item>2500</item>
+        <item>3000</item>
+    </string-array>
 </resources>

@@ -24,4 +24,7 @@ public interface WordDao {
 
     @Query("SELECT * FROM word where rating > 0")
     List<Word> getAll();
+
+    @Query("UPDATE word set ranking = ranking + :increment where nazev LIKE :nazev")
+    void updateWordRank(String nazev, int increment);
 }
