@@ -211,6 +211,7 @@ public class AndroidTTS extends AppCompatActivity {
         int i = randomInt.nextInt(allWords.size());
 
 
+        System.out.println(allWords.get(i).getNazev() + " " + "ranking:" + allWords.get(i).getRanking());
         textViewGenerated.setText(allWords.get(i).getNazev());
     }
 
