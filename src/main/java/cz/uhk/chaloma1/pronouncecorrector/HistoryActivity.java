@@ -1,11 +1,18 @@
 package cz.uhk.chaloma1.pronouncecorrector;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -18,24 +25,23 @@ import cz.uhk.chaloma1.pronouncecorrector.model.Evaluation;
 
 public class HistoryActivity extends AppCompatActivity {
 
+    private SharedPreferences sharedPreferences;
+
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter recycleAdapter;
+
     private AppRoomDatabase database;
 
     private EvaluationDao evaluationDao;
 
-    private List<Evaluation> evaluations;
-
-    private SharedPreferences sharedPreferences;
-
-    private RecyclerView recyclerView;
-
-    private RecyclerView.Adapter recycleAdapter;
-
-
+    List<Evaluation> evaluations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+        Toolbar toolbar = findViewById(R.id.toolbarHistory);
+        setSupportActionBar(toolbar);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -63,5 +69,27 @@ public class HistoryActivity extends AppCompatActivity {
         recycleAdapter = new RecycleViewAdapter(evaluations, this);
 
         recyclerView.setAdapter(recycleAdapter);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.home, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.action_home){
+            startActivity(new Intent(HistoryActivity.this, HomeActivity.class));
+            finish();
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 }

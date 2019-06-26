@@ -1,13 +1,7 @@
 package cz.uhk.chaloma1.pronouncecorrector;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,32 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.widget.Button;
-import android.widget.Toast;
-
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.LegendRenderer;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import cz.uhk.chaloma1.pronouncecorrector.dao.EvaluationDao;
-import cz.uhk.chaloma1.pronouncecorrector.database.AppRoomDatabase;
-import cz.uhk.chaloma1.pronouncecorrector.model.Evaluation;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private LineGraphSeries<DataPoint> correctSeries, wrongSeries;
 
-    private SharedPreferences sharedPreferences;
-
-    private AppRoomDatabase database;
-
-    private EvaluationDao evaluationDao;
-
-    private List<Evaluation> evaluationList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,62 +26,7 @@ public class HomeActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String login = sharedPreferences.getString("loginTemp", "chyba");
 
-        database = AppRoomDatabase.getDatabase(this);
-        evaluationDao = database.getEvaluationDao();
-
-        evaluationList = new ArrayList<Evaluation>();
-
-        GraphView graph = findViewById(R.id.graphView);
-
-        try{
-            evaluationList = evaluationDao.getUsersEvaluation(login);
-
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            Toast.makeText(this, "Nahrani hodnoceni pro graf se nepovedlo.", Toast.LENGTH_SHORT);
-
-        }
-
-        if (evaluationList.size() != 0){
-            double x, y, z;
-
-            correctSeries = new LineGraphSeries<>();
-            wrongSeries = new LineGraphSeries<>();
-
-
-
-            for (int i = 0; i < evaluationList.size(); i++){
-                x = i;
-                y = evaluationList.get(i).getCorrectNumber();
-                z = evaluationList.get(i).getWrongNumber();
-                correctSeries.appendData(new DataPoint(x,y), true, evaluationList.size());
-                wrongSeries.appendData(new DataPoint(x,z), true, evaluationList.size());
-
-            }
-
-            correctSeries.setColor(Color.GREEN);
-            wrongSeries.setColor(Color.RED);
-
-            correctSeries.setDrawBackground(true);
-            wrongSeries.setDrawBackground(true);
-
-            correctSeries.setBackgroundColor(Color.argb(30, 0,255,0));
-            wrongSeries.setBackgroundColor(Color.argb(30, 255,0,0));
-
-
-            graph.addSeries(correctSeries);
-            graph.addSeries(wrongSeries);
-
-            correctSeries.setTitle("Spravna slova");
-            wrongSeries.setTitle("Spatna slova");
-            graph.getLegendRenderer().setVisible(true);
-            graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-
-
-        }
 
 
 
@@ -166,7 +84,7 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_home) {
             return true;
         }
 
@@ -188,9 +106,8 @@ public class HomeActivity extends AppCompatActivity
             Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_statistic) {
+            startActivity(new Intent(HomeActivity.this, StatisticActivity.class));
 
         }
 

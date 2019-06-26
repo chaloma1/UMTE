@@ -45,10 +45,12 @@ public class SettingsActivity extends AppCompatActivity {
 
         Button buttonWordInit = findViewById(R.id.buttonWordInit);
 
+
         buttonWordInit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 initWords();
+                Toast.makeText(SettingsActivity.this, "Slova a hodnoceni resetovana.", Toast.LENGTH_SHORT).show();
             }
         });
 

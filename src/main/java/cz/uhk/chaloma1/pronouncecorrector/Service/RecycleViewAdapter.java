@@ -1,6 +1,7 @@
 package cz.uhk.chaloma1.pronouncecorrector.Service;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +35,17 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
     public void onBindViewHolder(ViewHolder holder, int position) {
         Evaluation evaluation = evaluationList.get(position);
 
-        holder.textViewEvalAverage.setText(String.format("%.2f",evaluation.getAverage()) + "%");
+        float average = evaluation.getAverage();
+
+        holder.textViewEvalAverage.setText(String.format("%.2f",average) + "%");
+
+        if (average > 50){
+            holder.textViewEvalAverage.setTextColor(Color.GREEN);
+        }else{
+            holder.textViewEvalAverage.setTextColor(Color.RED);
+        }
+
+
         holder.textViewEvalDate.setText(evaluation.getDatum());
         holder.textViewEvalCorrect.setText("Correct words: " + " " + evaluation.getCorrectWords());
         holder.textViewEvalWrong.setText("Wrong words: " + " " + evaluation.getWrongWords());

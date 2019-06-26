@@ -1,10 +1,10 @@
 package cz.uhk.chaloma1.pronouncecorrector;
 
 import android.Manifest;
-import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -14,7 +14,6 @@ import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +23,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -105,8 +105,10 @@ public class AndroidTTS extends AppCompatActivity {
                 System.out.println("Clicked");
                 Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.US);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.US.toString());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US.toString());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.UK.toString());
+                //intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
                 intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
 
                 mySpeechRecognizer.startListening(intent);
@@ -124,11 +126,38 @@ public class AndroidTTS extends AppCompatActivity {
             }
         });
 
+        final CheckBox checkBoxPojistka = findViewById(R.id.checkBoxPojistka);
+        checkBoxPojistka.setChecked(false);
+
+        Button buttonSetRating = findViewById(R.id.buttonSetRating);
+
+        buttonSetRating.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (checkBoxPojistka.isChecked()) {
+                    try {
+                        wordDao.updateWordRating(textViewGenerated.getText().toString());
+                        allWords = wordDao.getAll();
+                        generateWord();
+                        checkBoxPojistka.setChecked(false);
+                        Toast.makeText(AndroidTTS.this, "Slovo odebrano z vyberu", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        Toast.makeText(AndroidTTS.this, "Nepodarilo se upravit rating slova", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+        });
+
         buttonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if (progressBarTraining.getProgress() < progressBarTraining.getMax()) {
+
+                    buttonNext.setTextColor(Color.BLACK);
 
                     try {
                         generateWord();
@@ -297,6 +326,7 @@ public class AndroidTTS extends AppCompatActivity {
             if(spokenWord.equals(generatedWord)){
                 if (zapocitaneSlovo == false) {
                     correctWords.add(generatedWord);
+                    buttonNext.setTextColor(Color.GREEN);
                 }
                 try {
                     wordDao.updateWordRank(generatedWord, 1);
@@ -313,6 +343,7 @@ public class AndroidTTS extends AppCompatActivity {
         if (correct == false){
             if (zapocitaneSlovo == false) {
                 wrongWords.add(generatedWord);
+                buttonNext.setTextColor(Color.RED);
             }
             try {
                 wordDao.updateWordRank(generatedWord, -1);
@@ -371,7 +402,7 @@ public class AndroidTTS extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_android_tt, menu);
+        getMenuInflater().inflate(R.menu.home, menu);
         return true;
     }
 
@@ -383,8 +414,10 @@ public class AndroidTTS extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_home){
+            startActivity(new Intent(AndroidTTS.this, HomeActivity.class));
+            finish();
+
         }
 
         return super.onOptionsItemSelected(item);

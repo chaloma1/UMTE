@@ -17,6 +17,9 @@ public interface EvaluationDao {
     @Query("SELECT * FROM Evaluation WHERE ownerLogin = :login ORDER BY DATE(datum) DESC")
     List<Evaluation> getUsersEvaluation(String login);
 
+    @Query("SELECT * FROM Evaluation WHERE ownerLogin = :login ORDER BY DATE(datum) ASC")
+    List<Evaluation> getUsersEvaluationASC(String login);
+
 
     //List<Evaluation> getUserGraphEvaluation(String login);
 

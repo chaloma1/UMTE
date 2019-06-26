@@ -109,6 +109,7 @@ public class Evaluation {
                 stringBuilder.append(separator);
             }
             stringBuilder.append(word);
+            correctWords.set(correctWords.indexOf(word), "");
 
         }
         this.correctWords = stringBuilder.toString();
@@ -126,6 +127,8 @@ public class Evaluation {
                 stringBuilder.append(separator);
             }
             stringBuilder.append(word);
+            wrongWords.set(wrongWords.indexOf(word), "");
+
 
         }
         this.wrongWords = stringBuilder.toString();

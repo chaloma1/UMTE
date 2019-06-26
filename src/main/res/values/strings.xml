@@ -36,4 +36,5 @@
         <item>2500</item>
         <item>3000</item>
     </string-array>
+    <string name="title_activity_history">HistoryActivity</string>
 </resources>
